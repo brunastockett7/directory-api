@@ -1,0 +1,190 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Directory API",
+    "version": "1.0.0",
+    "description": "CRUD API for People (7+ fields) and Companies with validation, error handling, and Swagger documentation"
+  },
+  "servers": [
+    { "url": "http://localhost:3000" },
+    { "url": "https://directory-api.onrender.com" }
+  ],
+  "paths": {
+    "/api/people": {
+      "get": {
+        "summary": "List all people",
+        "responses": {
+          "200": {
+            "description": "Array of people",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Person" } } } }
+          },
+          "500": { "description": "Server error" }
+        }
+      },
+      "post": {
+        "summary": "Create a person",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PersonCreate" } } }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+
+    "/api/people/{id}": {
+      "get": {
+        "summary": "Retrieve a person by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Person object", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "400": { "description": "Invalid ID" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "put": {
+        "summary": "Update a person",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PersonCreate" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "400": { "description": "Invalid ID or validation error" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a person",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Deleted successfully" },
+          "400": { "description": "Invalid ID" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+
+    "/api/companies": {
+      "get": {
+        "summary": "List all companies",
+        "responses": {
+          "200": {
+            "description": "List of companies",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Company" } } } }
+          },
+          "500": { "description": "Server error" }
+        }
+      },
+      "post": {
+        "summary": "Create a company",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CompanyCreate" } } }
+        },
+        "responses": {
+          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "400": { "description": "Validation error" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+
+    "/api/companies/{id}": {
+      "get": {
+        "summary": "Get company by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Company", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "400": { "description": "Invalid ID" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "put": {
+        "summary": "Update a company",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CompanyCreate" } } }
+        },
+        "responses": {
+          "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "400": { "description": "Invalid ID or validation error" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a company",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Deleted successfully" },
+          "400": { "description": "Invalid ID" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "Person": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string" },
+          "favoriteColor": { "type": "string" },
+          "birthday": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "jobTitle": { "type": "string" }
+        },
+        "required": ["_id", "firstName", "lastName", "email", "favoriteColor", "birthday", "phone", "address", "jobTitle"]
+      },
+
+      "PersonCreate": {
+        "type": "object",
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string" },
+          "favoriteColor": { "type": "string" },
+          "birthday": { "type": "string" },
+          "phone": { "type": "string" },
+          "address": { "type": "string" },
+          "jobTitle": { "type": "string" }
+        },
+        "required": ["firstName", "lastName", "email", "favoriteColor", "birthday", "phone", "address", "jobTitle"]
+      },
+
+      "Company": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "name": { "type": "string" },
+          "domain": { "type": "string" }
+        },
+        "required": ["_id", "name"]
+      },
+      "CompanyCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "domain": { "type": "string" }
+        },
+        "required": ["name"]
+      }
+    }
+  }
+}
