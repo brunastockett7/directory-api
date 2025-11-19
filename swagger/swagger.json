@@ -6,9 +6,9 @@
     "description": "CRUD API for People (7+ fields) and Companies with validation, error handling, and Swagger documentation"
   },
   "servers": [
-    { "url": "http://localhost:3000" },
-    { "url": "https://directory-api.onrender.com" }
-  ],
+  { "url": "http://localhost:3000" },
+  { "url": "https://directory-api-vupn.onrender.com" }
+],
   "paths": {
     "/api/people": {
       "get": {
