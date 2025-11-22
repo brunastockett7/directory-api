@@ -24,6 +24,26 @@ const isProd = process.env.NODE_ENV === 'production';
 app.use(express.json());
 app.use(cors());
 
+// 🔍 Debug: log Auth0 env values at startup
+console.log("Auth0 config on startup:", {
+  BASE_URL: process.env.BASE_URL,
+  AUTH0_ISSUER_BASE_URL: process.env.AUTH0_ISSUER_BASE_URL,
+  AUTH0_CLIENT_ID: !!process.env.AUTH0_CLIENT_ID,
+  AUTH0_SECRET: !!process.env.AUTH0_SECRET
+});
+
+// 🔐 NEW: OAuth Middleware
+app.use(
+  auth({
+    authRequired: false,
+    auth0Logout: true,
+    baseURL: process.env.BASE_URL,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+    secret: process.env.AUTH0_SECRET,
+  })
+);
+
 // 🔐 NEW: OAuth Middleware (adds /login, /logout, /callback)
 app.use(
   auth({
