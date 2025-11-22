@@ -11,18 +11,43 @@ const { exec } = require('child_process');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDoc = require('./swagger/swagger.json');
 
+// 🔐 NEW: OAuth via Auth0
+const { auth } = require('express-openid-connect');
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const isProd = process.env.NODE_ENV === 'production';
 
-// Middleware
+// ──────────────────────────────────────────────
+//  Basic Middleware
+// ──────────────────────────────────────────────
 app.use(express.json());
 app.use(cors());
 
-// Dev request log (place BEFORE routes to log requests)
+// 🔐 NEW: OAuth Middleware (adds /login, /logout, /callback)
+app.use(
+  auth({
+    authRequired: false,                // public routes allowed
+    auth0Logout: true,
+    baseURL: process.env.BASE_URL,      // http://localhost:8080
+    clientID: process.env.AUTH0_CLIENT_ID,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+    secret: process.env.AUTH0_SECRET,
+  })
+);
+
+// OPTIONAL: Test profile route (useful for your video)
+app.get('/profile', (req, res) => {
+  if (!req.oidc || !req.oidc.isAuthenticated()) {
+    return res.status(401).json({ message: "Not logged in" });
+  }
+  res.json(req.oidc.user);
+});
+
+// Dev request log
 if (!isProd) {
   app.use((req, _res, next) => {
-    console.log('> Incoming:', req.method, req.url);
+    console.log('> Incoming:', req.method, ' ', req.url);
     next();
   });
 }
@@ -30,34 +55,31 @@ if (!isProd) {
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// Health route (for quick checks and Render)
+// Health check
 app.get('/', (_req, res) => res.json({ ok: true, docs: '/api-docs' }));
 
 // ──────────────────────────────────────────────
-//  API ROUTES – NEW FOR directory-api
+//  API ROUTES
 // ──────────────────────────────────────────────
-
-// People routes (this replaces "contacts")
 const peopleRoutes = require('./routes/people');
 app.use('/api/people', peopleRoutes);
 
-// Companies routes
 const companiesRoutes = require('./routes/companies');
 app.use('/api/companies', companiesRoutes);
 
-// Helper: auto-open default browser locally
+// Auto-open browser when local
 function openBrowser(url) {
-  if (isProd) return; // never auto-open on Render
+  if (isProd) return;
   const platform = process.platform;
   if (platform === 'win32') exec(`start "" "${url}"`);
   else if (platform === 'darwin') exec(`open "${url}"`);
   else exec(`xdg-open "${url}"`);
 }
 
-// Init DB first, then start server
+// Start DB + server
 db.initDb((err) => {
   if (err) {
-    console.error('❌ Failed to init DB:', err);
+    console.error('❌ DB init failed:', err);
     process.exit(1);
   }
 
@@ -65,7 +87,7 @@ db.initDb((err) => {
 
   app.listen(...listenArgs, () => {
     const url = `http://localhost:${PORT}`;
-    console.log(`🚀 Server listening on ${url}`);
+    console.log(`🚀 Server running at ${url}`);
     openBrowser(url);
   });
 });

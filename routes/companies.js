@@ -2,6 +2,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/connect');
+const { requiresAuth } = require('../middleware/auth'); // 🔐 NEW
 
 const router = express.Router();
 const COLLECTION = 'companies';
@@ -26,7 +27,7 @@ function validateCompany(body) {
 //  Routes for /api/companies
 // ──────────────────────────────────────────────
 
-// GET /api/companies  (all)
+// GET /api/companies  (all) — public
 router.get('/', async (_req, res) => {
   try {
     const docs = await getDb().collection(COLLECTION).find().toArray();
@@ -37,7 +38,7 @@ router.get('/', async (_req, res) => {
   }
 });
 
-// GET /api/companies/:id  (one)
+// GET /api/companies/:id  (one) — public
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -60,8 +61,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/companies  (create)
-router.post('/', async (req, res) => {
+// POST /api/companies  (create) — 🔐 protected
+router.post('/', requiresAuth, async (req, res) => {
   try {
     validateCompany(req.body);
 
@@ -80,8 +81,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/companies/:id  (update)
-router.put('/:id', async (req, res) => {
+// PUT /api/companies/:id  (update) — 🔐 protected
+router.put('/:id', requiresAuth, async (req, res) => {
   try {
     const { id } = req.params;
     if (!ObjectId.isValid(id)) {
@@ -109,8 +110,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/companies/:id  (remove)
-router.delete('/:id', async (req, res) => {
+// DELETE /api/companies/:id  (remove) — 🔐 protected
+router.delete('/:id', requiresAuth, async (req, res) => {
   try {
     const { id } = req.params;
     if (!ObjectId.isValid(id)) {

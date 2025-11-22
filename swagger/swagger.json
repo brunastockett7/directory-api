@@ -3,12 +3,14 @@
   "info": {
     "title": "Directory API",
     "version": "1.0.0",
-    "description": "CRUD API for People (7+ fields) and Companies with validation, error handling, and Swagger documentation"
+    "description": "CRUD API for People (7+ fields) and Companies with validation, error handling, OAuth authentication, and Swagger documentation"
   },
+
   "servers": [
-  { "url": "http://localhost:3000" },
-  { "url": "https://directory-api-vupn.onrender.com" }
-],
+    { "url": "http://localhost:8080" },
+    { "url": "https://directory-api-vupn.onrender.com" }
+  ],
+
   "paths": {
     "/api/people": {
       "get": {
@@ -16,20 +18,40 @@
         "responses": {
           "200": {
             "description": "Array of people",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Person" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Person" }
+                }
+              }
+            }
           },
           "500": { "description": "Server error" }
         }
       },
       "post": {
-        "summary": "Create a person",
+        "summary": "Create a person (Protected)",
+        "security": [{ "auth0": [] }],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PersonCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PersonCreate" }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
           "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" },
           "500": { "description": "Server error" }
         }
       }
@@ -38,9 +60,18 @@
     "/api/people/{id}": {
       "get": {
         "summary": "Retrieve a person by ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": {
-          "200": { "description": "Person object", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "200": {
+            "description": "Person object",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
           "400": { "description": "Invalid ID" },
           "404": { "description": "Not found" },
           "500": { "description": "Server error" }
@@ -48,13 +79,26 @@
       },
       "put": {
         "summary": "Update a person",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PersonCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PersonCreate" }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Person" } } } },
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Person" }
+              }
+            }
+          },
           "400": { "description": "Invalid ID or validation error" },
           "404": { "description": "Not found" },
           "500": { "description": "Server error" }
@@ -62,7 +106,9 @@
       },
       "delete": {
         "summary": "Delete a person",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": {
           "204": { "description": "Deleted successfully" },
           "400": { "description": "Invalid ID" },
@@ -78,20 +124,40 @@
         "responses": {
           "200": {
             "description": "List of companies",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Company" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Company" }
+                }
+              }
+            }
           },
           "500": { "description": "Server error" }
         }
       },
       "post": {
-        "summary": "Create a company",
+        "summary": "Create a company (Protected)",
+        "security": [{ "auth0": [] }],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CompanyCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CompanyCreate" }
+            }
+          }
         },
         "responses": {
-          "201": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Company" }
+              }
+            }
+          },
           "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" },
           "500": { "description": "Server error" }
         }
       }
@@ -100,34 +166,62 @@
     "/api/companies/{id}": {
       "get": {
         "summary": "Get company by ID",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": {
-          "200": { "description": "Company", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "200": {
+            "description": "Company",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Company" }
+              }
+            }
+          },
           "400": { "description": "Invalid ID" },
           "404": { "description": "Not found" },
           "500": { "description": "Server error" }
         }
       },
       "put": {
-        "summary": "Update a company",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "summary": "Update a company (Protected)",
+        "security": [{ "auth0": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CompanyCreate" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CompanyCreate" }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Updated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Company" } } } },
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Company" }
+              }
+            }
+          },
           "400": { "description": "Invalid ID or validation error" },
+          "401": { "description": "Unauthorized" },
           "404": { "description": "Not found" },
           "500": { "description": "Server error" }
         }
       },
       "delete": {
-        "summary": "Delete a company",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "summary": "Delete a company (Protected)",
+        "security": [{ "auth0": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
         "responses": {
           "204": { "description": "Deleted successfully" },
           "400": { "description": "Invalid ID" },
+          "401": { "description": "Unauthorized" },
           "404": { "description": "Not found" },
           "500": { "description": "Server error" }
         }
@@ -136,6 +230,19 @@
   },
 
   "components": {
+    "securitySchemes": {
+      "auth0": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://YOUR_DOMAIN.us.auth0.com/authorize",
+            "tokenUrl": "https://YOUR_DOMAIN.us.auth0.com/oauth/token",
+            "scopes": {}
+          }
+        }
+      }
+    },
+
     "schemas": {
       "Person": {
         "type": "object",
@@ -150,7 +257,17 @@
           "address": { "type": "string" },
           "jobTitle": { "type": "string" }
         },
-        "required": ["_id", "firstName", "lastName", "email", "favoriteColor", "birthday", "phone", "address", "jobTitle"]
+        "required": [
+          "_id",
+          "firstName",
+          "lastName",
+          "email",
+          "favoriteColor",
+          "birthday",
+          "phone",
+          "address",
+          "jobTitle"
+        ]
       },
 
       "PersonCreate": {
@@ -165,7 +282,16 @@
           "address": { "type": "string" },
           "jobTitle": { "type": "string" }
         },
-        "required": ["firstName", "lastName", "email", "favoriteColor", "birthday", "phone", "address", "jobTitle"]
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "favoriteColor",
+          "birthday",
+          "phone",
+          "address",
+          "jobTitle"
+        ]
       },
 
       "Company": {
@@ -177,6 +303,7 @@
         },
         "required": ["_id", "name"]
       },
+
       "CompanyCreate": {
         "type": "object",
         "properties": {

@@ -2,6 +2,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/connect');
+const { requiresAuth } = require('../middleware/auth'); // 🔐 NEW
 
 const router = express.Router();
 
@@ -56,7 +57,7 @@ function validatePerson(body) {
 //  Routes for /api/people
 // ──────────────────────────────────────────────
 
-// GET /api/people  (all)
+// GET /api/people  (all) — public
 router.get('/', async (_req, res) => {
   try {
     const docs = await getDb().collection(COLLECTION).find().toArray();
@@ -67,7 +68,7 @@ router.get('/', async (_req, res) => {
   }
 });
 
-// GET /api/people/:id  (one)
+// GET /api/people/:id  (one) — public
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,8 +86,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/people  (create)
-router.post('/', async (req, res) => {
+// POST /api/people  (create) — 🔐 protected
+router.post('/', requiresAuth, async (req, res) => {
   try {
     validatePerson(req.body);
 
@@ -100,7 +101,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/people/:id  (update)
+// PUT /api/people/:id  (update) — public (you can protect this too if you want)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,7 +131,6 @@ router.put('/:id', async (req, res) => {
         { returnDocument: 'after' }
       );
 
-    // In MongoDB driver v5, the doc is in result.value
     if (!result.value) {
       return res.status(404).json({ message: 'Person not found' });
     }
@@ -142,7 +142,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/people/:id  (remove)
+// DELETE /api/people/:id  (remove) — public (optional to protect)
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
