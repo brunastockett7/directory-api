@@ -44,18 +44,6 @@ app.use(
   })
 );
 
-// 🔐 NEW: OAuth Middleware (adds /login, /logout, /callback)
-app.use(
-  auth({
-    authRequired: false,                // public routes allowed
-    auth0Logout: true,
-    baseURL: process.env.BASE_URL,      // http://localhost:8080
-    clientID: process.env.AUTH0_CLIENT_ID,
-    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    secret: process.env.AUTH0_SECRET,
-  })
-);
-
 // OPTIONAL: Test profile route (useful for your video)
 app.get('/profile', (req, res) => {
   if (!req.oidc || !req.oidc.isAuthenticated()) {
