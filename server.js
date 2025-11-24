@@ -52,12 +52,17 @@ app.use(
   })
 );
 
-// Test profile route
+// Test profile route (protected)
 app.get('/profile', (req, res) => {
   if (!req.oidc || !req.oidc.isAuthenticated()) {
     return res.status(401).json({ message: "Not logged in" });
   }
   res.json(req.oidc.user);
+});
+
+// 🔹 Explicit logout route (nice for demo + video)
+app.get('/logout', (req, res) => {
+  return res.oidc.logout(); // will redirect back to BASE_URL after logging out
 });
 
 // Dev request log
@@ -71,8 +76,16 @@ if (!isProd) {
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// Health check
-app.get('/', (_req, res) => res.json({ ok: true, docs: '/api-docs' }));
+// 🔹 Root route: redirect based on authentication
+app.get('/', (req, res) => {
+  if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
+    // Logged in → go to Swagger docs
+    return res.redirect('/api-docs');
+  }
+
+  // Not logged in → go to Auth0 login
+  return res.redirect('/login');
+});
 
 // ──────────────────────────────────────────────
 //  API ROUTES
