@@ -7,7 +7,7 @@ function requireEnv(name) {
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
-  return value;
+  return value.trim();  // 👈 FIX: remove hidden spaces/newlines
 }
 
 // Auth0 configuration
