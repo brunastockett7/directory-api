@@ -25,11 +25,11 @@ const AUTH0_CLIENT_ID = (process.env.AUTH0_CLIENT_ID || '').trim();
 const AUTH0_SECRET = (process.env.AUTH0_SECRET || '').trim();
 
 // Debug log to confirm final values
-console.log("Auth0 config on startup:", {
+console.log('Auth0 config on startup:', {
   BASE_URL,
   AUTH0_ISSUER_BASE_URL: ISSUER_BASE_URL,
   AUTH0_CLIENT_ID_SET: !!AUTH0_CLIENT_ID,
-  AUTH0_SECRET_SET: !!AUTH0_SECRET
+  AUTH0_SECRET_SET: !!AUTH0_SECRET,
 });
 
 // ──────────────────────────────────────────────
@@ -39,33 +39,46 @@ app.use(express.json());
 app.use(cors());
 
 // ──────────────────────────────────────────────
-//  Auth0 Middleware — ONLY ONE VERSION
+//  Auth0 Middleware — main OIDC config
 // ──────────────────────────────────────────────
 app.use(
   auth({
-    authRequired: false,
-    auth0Logout: true,
-    baseURL: BASE_URL,
+    authRequired: false,          // only protect routes you choose
+    auth0Logout: true,            // use Auth0 for logout
+    baseURL: BASE_URL,            // must match your Render URL in prod
     clientID: AUTH0_CLIENT_ID,
     issuerBaseURL: ISSUER_BASE_URL,
     secret: AUTH0_SECRET,
   })
 );
 
+// 🔹 Explicit LOGIN route (always opens Auth0)
+app.get('/login', (req, res) => {
+  // If already logged in, just send to Swagger
+  if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
+    return res.redirect('/api-docs');
+  }
+
+  // Otherwise start Auth0 login flow
+  return res.oidc.login({
+    returnTo: '/api-docs', // after login, go to Swagger UI
+  });
+});
+
+// 🔹 Explicit LOGOUT route (will redirect back to BASE_URL)
+app.get('/logout', (req, res) => {
+  return res.oidc.logout(); // Auth0 handles redirect using BASE_URL
+});
+
 // Test profile route (protected)
 app.get('/profile', (req, res) => {
   if (!req.oidc || !req.oidc.isAuthenticated()) {
-    return res.status(401).json({ message: "Not logged in" });
+    return res.status(401).json({ message: 'Not logged in' });
   }
   res.json(req.oidc.user);
 });
 
-// 🔹 Explicit logout route (nice for demo + video)
-app.get('/logout', (req, res) => {
-  return res.oidc.logout(); // will redirect back to BASE_URL after logging out
-});
-
-// Dev request log
+// Dev request log (only in local/dev)
 if (!isProd) {
   app.use((req, _res, next) => {
     console.log('> Incoming:', req.method, ' ', req.url);
@@ -73,10 +86,10 @@ if (!isProd) {
   });
 }
 
-// Swagger
+// Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// 🔹 Root route: redirect based on authentication
+// 🔹 HOME route: redirect based on authentication
 app.get('/', (req, res) => {
   if (req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated()) {
     // Logged in → go to Swagger docs
