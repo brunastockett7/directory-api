@@ -96,7 +96,7 @@ router.put('/:id', requiresAuth, async (req, res) => {
       .findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: req.body },
-        { returnDocument: 'after' }
+        { returnOriginal: false }      // 👈 use this for MongoDB driver 3.x
       );
 
     if (!result.value) {
@@ -106,7 +106,9 @@ router.put('/:id', requiresAuth, async (req, res) => {
     res.status(200).json(result.value);
   } catch (err) {
     console.error(err);
-    res.status(err.status || 500).json({ message: err.message || 'Failed to update company' });
+    res
+      .status(err.status || 500)
+      .json({ message: err.message || 'Failed to update company' });
   }
 });
 
