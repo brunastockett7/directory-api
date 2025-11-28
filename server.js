@@ -5,7 +5,6 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const db = require('./db/connect');
-const { exec } = require('child_process');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerDoc = require('./swagger/swagger.json');
@@ -28,7 +27,7 @@ console.log('Auth0 config:', {
   BASE_URL,
   ISSUER_BASE_URL,
   AUTH0_CLIENT_ID_SET: !!AUTH0_CLIENT_ID,
-  AUTH0_SECRET_SET: !!AUTH0_SECRET
+  AUTH0_SECRET_SET: !!AUTH0_SECRET,
 });
 
 // ──────────────────────────────────────────────
@@ -42,7 +41,7 @@ app.use(
   auth({
     authRequired: false,
     auth0Logout: true,
-    baseURL: BASE_URL,
+    baseURL: BASE_URL || `http://localhost:${PORT}`,
     clientID: AUTH0_CLIENT_ID,
     issuerBaseURL: ISSUER_BASE_URL,
     secret: AUTH0_SECRET,
@@ -53,13 +52,19 @@ app.use(
 app.get('/debug-auth', (req, res) => {
   res.json({
     hasOidc: !!req.oidc,
-    isAuthenticated: req.oidc?.isAuthenticated ? req.oidc.isAuthenticated() : null,
+    isAuthenticated: req.oidc?.isAuthenticated
+      ? req.oidc.isAuthenticated()
+      : null,
   });
 });
 
 // Small home page with login / logout links
 app.get('/', (req, res) => {
-  const isLoggedIn = req.oidc && req.oidc.isAuthenticated && req.oidc.isAuthenticated();
+  const isLoggedIn =
+    req.oidc && typeof req.oidc.isAuthenticated === 'function'
+      ? req.oidc.isAuthenticated()
+      : false;
+
   const statusText = isLoggedIn ? 'Logged in ✅' : 'Logged out ❌';
 
   res.send(`
@@ -90,17 +95,17 @@ app.get('/login', (req, res) => {
   return res.oidc.login({
     returnTo: '/api-docs',
     authorizationParams: {
-      prompt: 'login'   // 👈 always show the login screen
-    }
+      prompt: 'login', // always show the login screen
+    },
   });
 });
 
 // Optional: force logout back to home
 app.get('/logout', (req, res) => {
-  return res.oidc.logout({ returnTo: BASE_URL });
+  return res.oidc.logout({ returnTo: BASE_URL || `http://localhost:${PORT}` });
 });
 
-// Swagger docs (some routes will be protected by requiresAuth in your routers)
+// Swagger docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
 // API routes
@@ -108,16 +113,13 @@ app.use('/api/people', require('./routes/people'));
 app.use('/api/companies', require('./routes/companies'));
 
 // ──────────────────────────────────────────────
-//  Start DB + Server
-// ──────────────────────────────────────────────
 db.initDb((err) => {
   if (err) {
     console.error('DB init failed:', err);
     process.exit(1);
   }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running at ${BASE_URL || `http://localhost:${PORT}`}`);
- });
-
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running at ${BASE_URL || `http://localhost:${PORT}`}`);
+  });
 });

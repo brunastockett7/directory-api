@@ -2,7 +2,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../db/connect');
-const { requiresAuth } = require('../middleware/auth'); // 🔐 NEW
+const { requiresAuth } = require('../middleware/auth');
 
 const router = express.Router();
 const COLLECTION = 'companies';
@@ -13,8 +13,10 @@ const COLLECTION = 'companies';
 function validateCompany(body) {
   const errs = [];
   if (!body || typeof body !== 'object') errs.push('body required');
-  if (!body.name || typeof body.name !== 'string') errs.push('name required (string)');
-  if (body.domain && typeof body.domain !== 'string') errs.push('domain must be string');
+  if (!body.name || typeof body.name !== 'string')
+    errs.push('name required (string)');
+  if (body.domain && typeof body.domain !== 'string')
+    errs.push('domain must be string');
 
   if (errs.length) {
     const e = new Error(errs.join('; '));
@@ -77,7 +79,9 @@ router.post('/', requiresAuth, async (req, res) => {
     res.status(201).json(created);
   } catch (err) {
     console.error(err);
-    res.status(err.status || 500).json({ message: err.message || 'Failed to create company' });
+    res
+      .status(err.status || 500)
+      .json({ message: err.message || 'Failed to create company' });
   }
 });
 
@@ -96,7 +100,7 @@ router.put('/:id', requiresAuth, async (req, res) => {
       .findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: req.body },
-        { returnOriginal: false }      // 👈 use this for MongoDB driver 3.x
+        { returnDocument: 'after' } // MongoDB 6.x style
       );
 
     if (!result.value) {

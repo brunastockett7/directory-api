@@ -1,7 +1,7 @@
 {
   "name": "directory-api",
   "version": "1.0.0",
-  "description": "W03/W04 Directory API with Express, MongoDB, Swagger, CRUD, Validation, OAuth",
+  "description": "W03/W04 Directory API with Express, MongoDB,Swagger, CRUD, Validation, OAuth",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {

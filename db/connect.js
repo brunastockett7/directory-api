@@ -8,7 +8,7 @@ const initDb = async (callback) => {
   if (_db) return callback(null, _db);
 
   const uri = process.env.MONGODB_URI;
-  const dbName = process.env.MONGODB_DBNAME || 'directorydb'; // NEW DEFAULT
+  const dbName = process.env.MONGODB_DBNAME || 'directorydb';
 
   if (!uri) {
     return callback(new Error('❌ Missing MONGODB_URI in .env or Render'));
